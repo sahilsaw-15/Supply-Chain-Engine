@@ -1,53 +1,42 @@
-# Software-Driven Supply Chain Monitoring with Industry 4.0 Integration
+# Supply Chain Engine
 
-A scalable platform for **real-time supply chain monitoring and predictive analytics**.  
-This system detects delivery risks, predicts delays, and enables data-driven decisions using **Industry 4.0 technologies**.
+Supply Chain Engine is a scalable supply chain intelligence platform designed to optimize logistics operations using predictive analytics, demand forecasting, inventory control, and real-time performance monitoring. 
+The system helps organizations improve efficiency, reduce risks, and enhance supply chain visibility.
 
 ---
 
 ## Overview
-This project combines **data processing, machine learning, and IoT integration** to monitor supply chain operations.  
-It analyzes historical and simulated real-time data to predict late deliveries and generate **structured, actionable alerts** for risky shipments.
+This project combines Data processing, Machine learning, and IoT integration to monitor supply chain operations.  
+It analyzes historical and simulated real-time data to predict late deliveries and generate structured, actionable alerts for risky shipments.
+
+
 
 ---
 
 ## Features
-- Data ingestion (CSV)  
-- Data preprocessing (cleaning, transformation, encoding)  
-- Feature engineering (delay, profit ratio, shipping efficiency)  
-- Predictive modeling for late delivery detection  
-- Advanced alert system (operational, predictive, IoT, system-level)  
-- Dashboard with KPIs, logs, and visualizations  
-- Real-time shipment monitoring (simulated / IoT-ready)  
+- Data Loading and Validation
+- Data Cleaning and Preprocessing
+- Demand Analysis and Trend Identification
+- Demand Forecasting using Linear Regression
+- Forecast Accuracy Evaluation (MAE, RMSE, MAPE, R² score)
+- Automated Risk and Alert Generation
+- Supply Chain Performance Monitoring
+- Interactive Dashboard Visualization
+- Industry 4.0-Oriented Analytics Framework
 
 ---
 
-## Machine Learning Models
-- Logistic Regression  
-- Random Forest  
-- XGBoost  
+## System Workflow Pipeline
+
+Raw Data → Data Loader → Data Cleaning & Preprocessing → Demand Analyzer → Demand Forecasting (Linear Regression) → Forecast Evaluation (MAE, RMSE, MAPE, R² score) → Intelligent Alert System → Interactive Dashboard
 
 ---
 
-## System Workflow
-1. Data Collection (CSV / IoT-ready)  
-2. Data Preprocessing  
-3. Feature Engineering  
-4. Model Prediction  
-5. Alert Generation  
-6. Dashboard Visualization  
+## Backend
 
 ---
 
-## Tech Stack
-
-### Backend
-- Python (Pandas, NumPy, Scikit-learn)  
-- Flask / FastAPI  
-- SQLAlchemy  
-- PostgreSQL / MySQL  
-
-### IoT & Industry 4.0 Integration
+## IoT & Industry 4.0 Integration
 - MQTT Protocol  
 - Node-RED / EdgeX  
 - InfluxDB (Time-Series DB)  
@@ -56,42 +45,11 @@ It analyzes historical and simulated real-time data to predict late deliveries a
 
 ## Alert System
 
-### A. Operational Alerts
-- **ETA Deviation Alert** → triggers when predicted delivery time exceeds acceptable threshold  
-- **Shipment Stoppage / Idle Alert** → detects vehicle inactivity beyond defined time window  
-
-### B. Predictive Alerts
-- **Predictive Maintenance Alert** → predicts potential vehicle/machine failure  
-- **Delay Risk Spike Alert** → flags sudden increase in delay probability  
-- **Confidence-Based Alert** → triggers only when model confidence exceeds threshold  
-
-### C. IoT / Sensor Alerts
-- **Temperature / Humidity Breach** → detects unsafe environmental conditions  
-- **Shock / Vibration Alert** → identifies potential product damage  
-- **Geo-fence Violation Alert** → detects route deviation or unauthorized movement  
-- **Fuel / Battery Alert** → monitors low fuel or energy levels  
-- **Device Offline Alert** → detects sensor/gateway disconnection  
-
-### D. System / Pipeline Alerts
-- **Data Ingestion Failure Alert** → identifies missing or failed data streams  
-- **Pipeline Latency Alert** → detects processing delays beyond SLA  
-- **Anomaly Detection Alert** → detects unusual patterns using ML  
-
-### E. Notification & Response
-- Mobile Push Notifications  
-- Dashboard Real-time Popups  
-- Alert Escalation Logic → escalates unresolved alerts to higher authority  
-
 ---
 
 ## Dashboard Insights
 - Late delivery risk analysis  
 - Shipping performance metrics  
-
----
-
-## Workflow Pipeline
-Order Placed → Data Collected → Processed → Model Prediction → Alert Generated → Dashboard Updated → Action Taken  
 
 ---
 
@@ -113,21 +71,23 @@ Order Placed → Data Collected → Processed → Model Prediction → Alert Gen
 ---
 
 ## Evaluation Metrics
-- Accuracy  
-- Precision  
-- Recall  
-- F1-Score  
-- ROC-AUC  
-- Confusion Matrix  
 
+Forecast Evaluation
+Implemented industry-standard forecasting metrics:
+• MAE (Mean Absolute Error) = 4.20
+• RMSE (Root Mean Squared Error) = 7.61
+• MAPE (Mean Absolute Percentage Error) = 30.14%
+• R² Score = 0.8804
+ 
 ---
 
 ## Authors
-- Elsayed, Abdelrahman  
+- Sawant, Sahil
 - Covaria, Sergio  
+- Elsayed, Abdelrahman  
 - Montalvan, Daniel  
 - Bhogal, Parminder Singh  
-- Sawant, Sahil  
+
 
 
 <img width="1024" height="1536" alt="sketch3" src="https://github.com/user-attachments/assets/c412591b-b98d-4baf-8def-28db20a30deb" />
