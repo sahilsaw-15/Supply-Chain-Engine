@@ -1,13 +1,13 @@
 # Supply Chain Engine
 
 Supply Chain Engine is a scalable supply chain intelligence platform designed to optimize logistics operations using predictive analytics, demand forecasting, inventory control, and real-time performance monitoring. 
-The system helps organizations improve efficiency, reduce risks, and enhance supply chain visibility.**.
+The system helps organizations improve efficiency, reduce risks, and enhance supply chain visibility.
 
 ---
 
 ## Overview
-This project combines **data processing, machine learning, and IoT integration** to monitor supply chain operations.  
-It analyzes historical and simulated real-time data to predict late deliveries and generate **structured, actionable alerts** for risky shipments.
+This project combines Data processing, Machine learning, and IoT integration to monitor supply chain operations.  
+It analyzes historical and simulated real-time data to predict late deliveries and generate structured, actionable alerts for risky shipments.
 
 
 
@@ -18,7 +18,7 @@ It analyzes historical and simulated real-time data to predict late deliveries a
 - Data Cleaning and Preprocessing
 - Demand Analysis and Trend Identification
 - Demand Forecasting using Linear Regression
-- Forecast Accuracy Evaluation (MAE, RMSE, MAPE, R²)
+- Forecast Accuracy Evaluation (MAE, RMSE, MAPE, R² score)
 - Automated Risk and Alert Generation
 - Supply Chain Performance Monitoring
 - Interactive Dashboard Visualization
@@ -28,28 +28,15 @@ It analyzes historical and simulated real-time data to predict late deliveries a
 
 ## System Workflow Pipeline
 
-Data Loader
-     ↓
-Data Cleaning & Preprocessing
-     ↓
-Demand Analyzer
-     ↓
-Linear Regression Model
-     ↓
-Forecast Accuracy Metrics
-(MAE, RMSE, MAPE, R²)
-     ↓
-Alert System
-     ↓
-Dashboard
+Raw Data → Data Loader → Data Cleaning & Preprocessing → Demand Analyzer → Demand Forecasting (Linear Regression) → Forecast Evaluation (MAE, RMSE, MAPE, R² score) → Intelligent Alert System → Interactive Dashboard
 
 ---
 
-### Backend
+## Backend
 
 ---
 
-### IoT & Industry 4.0 Integration
+## IoT & Industry 4.0 Integration
 - MQTT Protocol  
 - Node-RED / EdgeX  
 - InfluxDB (Time-Series DB)  
