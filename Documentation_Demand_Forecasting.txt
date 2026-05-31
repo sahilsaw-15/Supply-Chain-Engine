@@ -1,0 +1,381 @@
+STAGE 1:
+Advanced Data Cleaning, Validation, and Forecasting Dataset Pipeline
+This update significantly expands the project from a basic CSV reader into a structured Java-based Supply Chain Analytics Engine capable of data ingestion, cleaning, validation, quality assessment, and forecasting dataset preparation.
+
+Project Summary :
+	- Source Records: 180,519
+	- Cleaned Records: 180,519
+	- Corrected/Standardized Rows: 159,889
+	- Likely Duplicate Orders: 11,370
+	- Forecasting Records Generated: 22,273
+
+1. Data Ingestion Improvements
+	- Implemented CSV loading for the DataCoSupplyChainDataset containing 180,519 rows and 53 columns.
+	- Replaced basic comma-based parsing with quote-aware CSV parsing to correctly handle commas inside quoted values.
+	- Replaced fixed column-index access with column-name based mapping, making the system resilient to future dataset column order changes.
+	- Eliminated silent row skipping and added safe conversion logic with reporting.
+	- Added safeguards to prevent runtime crashes when no records are available.
+
+2. SupplyChainRecord Expansion
+The SupplyChainRecord model was expanded to organize and represent additional supply chain, logistics, product, shipment, location, and financial attributes already available within the source dataset.
+
+The record model now includes:
+	- Product and category information
+	- Department information
+	- Customer location details
+	- Order location details
+	- Market information
+	- Payment information
+	- Shipping and delivery details
+	- Order status information
+	- Quantity, pricing, sales, and profit fields
+	- Geographic coordinates
+	- Order and shipping timestamps
+
+3. Data Cleaning Enhancements
+3.1 Header Cleaning
+	- Trimmed column names
+	- Detected blank headers
+	- Detected duplicate headers
+3.2 Row Structure Validation
+	- Repaired rows with missing columns
+	- Trimmed rows containing extra columns
+	- Ensured consistent row structure throughout the dataset
+3.3 Text Standardization
+	- Removed unnecessary whitespace
+	- Collapsed repeated spaces
+	- Replaced missing critical text fields with UNKNOWN
+3.4 Country Normalization
+Standardized country names into a single English representation.
+Examples:
+	• EE. UU. → United States
+	• US → United States
+	• USA → United States
+	• Japón → Japan
+	• Corea del Sur → South Korea
+	• Alemania → Germany
+	• España → Spain
+	• Países Bajos → Netherlands
+	• República Democrática del Congo → Democratic Republic of the Congo
+Added accent-insensitive matching to correctly process international values.
+
+4. Numeric and Date Validation
+4.1 Numeric Cleaning
+Added safe parsing and validation for:
+	- Sales
+	- Profit
+	- Product Price
+	- Order Item Total
+	- Discounts
+	- Discount Rates
+	- Profit Ratios
+	- Sales Per Customer
+	- Shipping Days
+	- Quantities
+	- IDs and status fields
+
+Invalid values are safely converted to default values rather than causing failures.
+
+4.2 Date Cleaning
+	- Parsed Order Date using Java LocalDateTime
+	- Parsed Shipping Date using Java LocalDateTime
+	- Validated chronological consistency between dates
+	- Verified shipping duration against actual date differences
+
+5. Validation and Quality Checks
+5.1 Duplicate Detection
+	- Duplicate detection using Order ID + Order Item ID
+	- Added deeper likely-duplicate detection using business attributes
+
+Results:
+	• Duplicate Order Items Found: 0
+	• Likely Duplicate Orders Found: 11,370
+
+5.2 Business Rule Validation
+Implemented rule-based consistency checks including:
+	- Delivery risk validation
+	- Delivery status validation
+	- Order status validation
+	- Discount consistency validation
+	- Profit consistency validation
+	- Profit ratio validation
+	- Quantity and sales consistency checks
+	- Shipping timeline validation
+
+Generated: 
+	• 18,511 Business Rule Warnings
+
+6. Statistical Outlier Detection
+Implemented both threshold-based and statistical anomaly detection.
+Detected:
+	• Profit Outliers: 3,608
+	• Sales Outliers: 467
+
+Additional checks include:
+	- Suspiciously high sales
+	- Excessive profit or loss values
+	- Unusual shipping durations
+	- Invalid numeric ranges
+	- Geographic coordinate validation
+
+7. Privacy and Sensitive Data Handling
+The following fields are intentionally excluded from analytics processing:
+	- Customer Email Address
+	- Customer Password
+	- Customer First Name
+	- Customer Last Name
+	- Customer Street
+	- Customer Zip Code
+	- Product Image
+	- Product Description
+	- Order Zip Code
+	
+These fields are not required for demand forecasting and were removed from the analytical workflow.
+
+8. Configurable Cleaning Framework
+Introduced a configurable cleaning architecture.
+Added Components
+	- CleaningConfig
+		• Centralized thresholds and validation rules
+		• Reduces hardcoded values
+	- CleanedDataExporter
+		• Exports cleaned datasets to Excel-friendly CSV files
+	- SaveLocationChooser
+		• Supports custom output locations
+	- Lightweight Test Suite
+		• Validates cleaning logic without requiring JUnit
+
+9. Dual-Output Data Pipeline
+One of the major improvements in this update is the creation of a multi-stage data pipeline that generates two datasets from a single raw source.
+
+Dataset 1: Cleaned Order-Level Dataset
+Generated File:
+Data/cleaned_supply_chain_data.csv
+Purpose:
+	- Preserves individual order records
+	- Stores cleaned and validated operational data
+	- Serves as the master cleaned dataset
+	- Can be reused for future analysis and auditing
+	
+Dataset 2: Forecasting-Ready Demand Dataset
+Generated File:
+Data/forecasting_demand_dataset.csv
+
+Purpose:
+	- Converts transactional order data into a forecasting-ready time-series demand dataset.
+	- Aggregates records by:
+		• Order Date
+		• Product Name
+		• Category Name
+
+Generated Features:
+		- Order Date
+		- Product Name
+		- Category Name
+		- Total Quantity
+		- Total Sales
+		- Total Profit
+		- Order Count
+
+Transformation Results:
+		• Original Order Records: 180,519
+		• Forecasting Demand Records: 22,273
+
+This significantly reduces transaction-level noise and creates a structured time-series style dataset suitable for future forecasting models.
+
+Pipeline Flow
+	Raw Dataset (180,519 Rows)
+	       ↓
+	CSV Data Loader
+	       ↓
+	Data Cleaning & Validation Engine
+	       ↓
+	cleaned_supply_chain_data.csv
+	       ↓
+	Demand Dataset Builder
+	       ↓
+	forecasting_demand_dataset.csv
+
+10. Current Project Statistics
+	- Source Rows: 180,519
+	- Converted Records: 180,519
+	- Corrected/Standardized Rows: 159,889
+	- Flagged Rows: 31,497
+	- Likely Duplicate Orders: 11,370
+	- Business Rule Warnings: 18,511
+	- Outlier Warnings: 10,247
+	- Profit Outliers: 3,608
+	- Sales Outliers: 467
+
+Data Quality Improvements Achieved
+	- Successfully retained 100% of source records during processing.
+	- Standardized multilingual country and region values into a unified format.
+	- Improved dataset consistency through validation and correction rules.
+	- Reduced data quality issues caused by missing, malformed, and inconsistent values.
+	- Generated forecasting-ready demand data from raw transactional records.
+
+
+
+11. Current Project Capabilities
+Java-Based Supply Chain Analytics Engine featuring:
+	- Data Ingestion
+	- Data Cleaning
+	- Data Standardization
+	- Validation Rules
+	- Duplicate Detection
+	- Statistical Outlier Detection
+	- Business Rule Verification
+	- Clean Dataset Export
+	- Forecasting Dataset Generation
+	- Reusable Data Processing Pipeline
+	
+	Engineering Design Principles
+	- Modular Java Architecture
+	- Object-Oriented Design (OOP)
+	- Separation of Concerns Across Components
+	- Reusable Data Processing Pipeline
+	- Configurable Validation and Cleaning Rules
+	- Dataset-Agnostic Column Mapping
+	- Fault-Tolerant Data Processing
+	- Data Quality-Driven Validation Framework
+	- Scalable Pipeline Design for Future Analytics Modules
+	- Export-Oriented Architecture for Downstream Forecasting Workflows
+	
+
+
+Key Outcome :
+The project now transforms a raw 53-column supply chain dataset into:
+
+- A cleaned and validated operational dataset for analytics and quality assessment.
+- A forecasting-ready demand dataset generated through demand aggregation for future demand prediction models.
+
+This establishes a reusable data processing pipeline that supports forecasting, risk analysis, alert generation, model evaluation, and dashboard development.
+
+STAGE 2:
+Demand Analyzer and Forecasting model Implementation
+
+	1. Forecasting Dataset Integration
+Utilized forecasting_demand_dataset.csv generated from the cleaned supply chain dataset.
+Dataset Features:
+• Order Date
+• Product Name
+• Category Name
+• Total Quantity
+• Total Sales
+• Total Profit
+• Order Count
+
+This transformed raw transactional data into a forecasting-ready time-series dataset.
+
+	2. Demand Forecasting Framework
+Implemented a multi-model forecasting pipeline:
+• Moving Average Model
+• Weighted Moving Average Model
+• Linear Regression Model
+
+Each model generates demand predictions and is evaluated using forecasting metrics.
+
+	3. Forecast Evaluation
+Implemented industry-standard forecasting metrics:
+• MAE (Mean Absolute Error) = 4.20
+• RMSE (Root Mean Squared Error) = 7.61
+• MAPE (Mean Absolute Percentage Error) = 30.14%
+• R² Score = 0.8804
+
+These metrics are used to compare forecasting performance and select the best model.
+
+	4. Automatic Model Selection
+Implemented model comparison and best-model selection.
+Current Results:
+• Moving Average Best For: 24 Products
+• Weighted Moving Average Best For: 21 Products
+• Linear Regression Best For: 68 Products
+
+This demonstrates that different products benefit from different forecasting approaches.
+
+	5. Forecast Result Generation
+Generated a third project dataset:
+Data/demand_forecast_results.csv
+
+Contains:
+• Forecasted Demand
+• Actual Demand
+• Best Performing Model
+• Forecast Metrics
+• Trend Classification
+• Risk Classification
+
+Current Project Outputs:
+• cleaned_supply_chain_data.csv
+• forecasting_demand_dataset.csv
+• demand_forecast_results.csv
+
+	6. Demand Analysis Engine
+Implemented business-oriented demand analytics including:
+• Demand Summary
+• Product Performance Analysis
+• Category Performance Analysis
+• Region Performance Analysis
+• Country Performance Analysis
+• Monthly Demand Trend Analysis
+
+Provides visibility into both high-performing and underperforming business areas.
+
+	7. Product, Category, Region & Country Insights
+Implemented:
+• Top Performing Products by Demand, Sales, and Profit
+• Bottom Performing Products by Demand, Sales, and Profit
+• Best and Worst Categories
+• Best and Worst Regions
+• Best and Worst Countries by Revenue and Demand
+
+	8. Demand Trend & Volatility Analysis
+Implemented:
+• Increasing Demand Detection
+• Stable Demand Detection
+• Declining Demand Detection
+Added demand volatility analysis using Coefficient of Variation (CV) with:
+• Low Volatility
+• Medium Volatility
+• High Volatility
+
+This helps identify demand stability and forecasting difficulty.
+
+	9. Supply Chain Risk Intelligence
+Implemented risk-focused business insights:
+• High Demand + High Delay Risk
+• High Demand + Low Profit
+
+These insights help identify potential supply bottlenecks and profitability concerns.
+
+	10. Current Project Capabilities
+
+Stage 1: CSV Data Loading
+        ↓
+Stage 2: Advanced Data Cleaning & Validation
+        ↓
+Stage 3: Cleaned Dataset Export
+        ↓
+Stage 4: Forecasting Dataset Generation
+        ↓
+Stage 5: Demand Analysis Engine
+        ↓
+Stage 6: Multi-Model Demand Forecasting
+        ↓
+Stage 7: Forecast Evaluation & Model Selection
+
+
+Key Outcome:
+The project now transforms a raw 53-column supply chain dataset into:
+
+- A cleaned and validated operational dataset for analytics and quality assessment.
+- A forecasting-ready demand dataset generated through demand aggregation.
+- A demand intelligence layer capable of analyzing product, category, region, and country performance.
+- A multi-model forecasting framework using Moving Average, Weighted Moving Average, and Linear regression techniques.
+- A forecasting evaluation system using MAE, RMSE, MAPE, and R² metrics for model comparison and selection.
+- A supply chain risk intelligence layer capable of identifying high-demand/high-delay and high-demand/low-profit scenarios.
+
+This establishes an end-to-end supply chain analytics and demand forecasting pipeline that supports demand analysis, forecasting, model evaluation, risk detection, alert generation, and future dashboard development.
+
+
+
