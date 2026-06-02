@@ -1,5 +1,7 @@
 package com.supplychain;
 
+import com.supplychain.alert.SupplyChainAlertGenerator;
+import com.supplychain.dashboard.SupplyChainDashboard;
 import com.supplychain.export.CleanedDataExporter;
 import com.supplychain.forecast.DemandDatasetBuilder;
 import com.supplychain.forecast.DemandForecaster;
@@ -7,13 +9,20 @@ import com.supplychain.loader.CSVDataLoader;
 import com.supplychain.loader.CSVDataLoader.DataCleaningResult;
 import com.supplychain.model.DemandRecord;
 import com.supplychain.model.ForecastResult;
+import com.supplychain.model.RiskIntelligenceResult;
+import com.supplychain.model.SupplyChainAlert;
 import com.supplychain.model.SupplyChainRecord;
 import com.supplychain.report.DemandReportGenerator;
 import com.supplychain.report.ForecastReportGenerator;
+import com.supplychain.report.RiskIntelligenceReportGenerator;
+import com.supplychain.report.SupplyChainAlertReportGenerator;
+import com.supplychain.risk.RiskIntelligenceGenerator;
+import com.supplychain.storage.LocalDatabaseStorage;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Scanner;
+import javax.swing.SwingUtilities;
 
 public class Main {
 
@@ -54,21 +63,41 @@ public class Main {
 
         Path cleanedOutputPath = saveCleanedDataset(records);
         ForecastingOutput forecastingOutput = saveForecastingDataset(records);
-        ForecastResultOutput forecastResultOutput = saveForecastResults(forecastingOutput.getDemandRecords());
+        ForecastResultOutput forecastResultOutput = saveForecastResults(forecastingOutput.getDemandRecords(), records);
+        RiskIntelligenceOutput riskIntelligenceOutput = saveRiskIntelligenceResults(
+                forecastResultOutput.getForecastResults(),
+                forecastingOutput.getDemandRecords(),
+                records);
+        AlertOutput alertOutput = saveSupplyChainAlerts(forecastResultOutput.getForecastResults());
+        Path databasePath = saveLocalDatabaseSnapshot(
+                records,
+                forecastResultOutput.getForecastResults(),
+                riskIntelligenceOutput.getRiskResults(),
+                alertOutput.getAlerts());
 
         printGeneratedCsvMessage(
                 cleanedOutputPath,
                 forecastingOutput.getOutputPath(),
-                forecastResultOutput.getOutputPath());
+                forecastResultOutput.getOutputPath(),
+                riskIntelligenceOutput.getOutputPath(),
+                alertOutput.getOutputPath());
+        System.out.println("Local database snapshot saved at: " + databasePath.toAbsolutePath());
 
-        if (shouldGenerateReport()) {
+        printAlertReport(alertOutput.getAlerts());
+        printForecastReport(forecastResultOutput.getForecastResults());
+        printRiskIntelligenceReport(
+                riskIntelligenceOutput.getRiskResults(),
+                forecastResultOutput.getForecastResults(),
+                records);
+        printDemandReport(forecastingOutput.getDemandRecords(), records);
 
-            printForecastReport(forecastResultOutput.getForecastResults());
-            printDemandReport(forecastingOutput.getDemandRecords(), records);
-        } else {
-
-            System.out.println("\nDemand report skipped.");
-        }
+        launchDashboardIfEnabled(
+                args,
+                records,
+                forecastingOutput.getDemandRecords(),
+                forecastResultOutput.getForecastResults(),
+                riskIntelligenceOutput.getRiskResults(),
+                alertOutput.getAlerts());
     }
 
     private static void clearConsole() {
@@ -153,7 +182,9 @@ public class Main {
         return new ForecastingOutput(demandRecords, outputPath);
     }
 
-    private static ForecastResultOutput saveForecastResults(List<DemandRecord> demandRecords) {
+    private static ForecastResultOutput saveForecastResults(
+            List<DemandRecord> demandRecords,
+            List<SupplyChainRecord> records) {
 
         Path outputPath = Path.of("Data", "demand_forecast_results.csv");
 
@@ -164,7 +195,7 @@ public class Main {
         }
 
         DemandForecaster forecaster = new DemandForecaster();
-        List<ForecastResult> forecastResults = forecaster.forecast(demandRecords);
+        List<ForecastResult> forecastResults = forecaster.forecast(demandRecords, records);
         CleanedDataExporter exporter = new CleanedDataExporter();
 
         try {
@@ -180,38 +211,76 @@ public class Main {
         return new ForecastResultOutput(forecastResults, outputPath);
     }
 
+    private static RiskIntelligenceOutput saveRiskIntelligenceResults(
+            List<ForecastResult> forecastResults,
+            List<DemandRecord> demandRecords,
+            List<SupplyChainRecord> records) {
+
+        Path outputPath = Path.of("Data", "risk_intelligence_results.csv");
+
+        if (forecastResults.isEmpty()) {
+
+            System.out.println("\nRisk intelligence CSV was not created because there are no forecast results.");
+            return new RiskIntelligenceOutput(List.of(), outputPath);
+        }
+
+        RiskIntelligenceGenerator generator = new RiskIntelligenceGenerator();
+        List<RiskIntelligenceResult> riskResults = generator.generate(forecastResults, demandRecords, records);
+        CleanedDataExporter exporter = new CleanedDataExporter();
+
+        try {
+
+            exporter.exportRiskIntelligenceToCsv(riskResults, outputPath);
+            System.out.println("Risk intelligence results CSV saved at: " + outputPath.toAbsolutePath());
+            System.out.println("Risk intelligence rows created: " + riskResults.size());
+        } catch (IOException e) {
+
+            System.out.println("\nError saving risk intelligence results CSV file: " + e.getMessage());
+        }
+
+        return new RiskIntelligenceOutput(riskResults, outputPath);
+    }
+
+    private static AlertOutput saveSupplyChainAlerts(List<ForecastResult> forecastResults) {
+
+        Path outputPath = Path.of("Data", "supply_chain_alerts.csv");
+
+        if (forecastResults.isEmpty()) {
+
+            System.out.println("\nAlert CSV was not created because there are no forecast results.");
+            return new AlertOutput(List.of(), outputPath);
+        }
+
+        SupplyChainAlertGenerator generator = new SupplyChainAlertGenerator();
+        List<SupplyChainAlert> alerts = generator.generate(forecastResults);
+        CleanedDataExporter exporter = new CleanedDataExporter();
+
+        try {
+
+            exporter.exportAlertsToCsv(alerts, outputPath);
+            System.out.println("Supply chain alerts CSV saved at: " + outputPath.toAbsolutePath());
+            System.out.println("Supply chain alert rows created: " + alerts.size());
+        } catch (IOException e) {
+
+            System.out.println("\nError saving supply chain alerts CSV file: " + e.getMessage());
+        }
+
+        return new AlertOutput(alerts, outputPath);
+    }
+
     private static void printGeneratedCsvMessage(
             Path cleanedOutputPath,
             Path forecastingOutputPath,
-            Path forecastResultsOutputPath) {
+            Path forecastResultsOutputPath,
+            Path riskIntelligenceOutputPath,
+            Path alertOutputPath) {
 
         System.out.println("\nAll CSV files are generated:");
         System.out.println("1. " + cleanedOutputPath.getFileName());
         System.out.println("2. " + forecastingOutputPath.getFileName());
         System.out.println("3. " + forecastResultsOutputPath.getFileName());
-    }
-
-    private static boolean shouldGenerateReport() {
-
-        Scanner scanner = new Scanner(System.in);
-
-        while (true) {
-
-            System.out.print("\nDo you want to generate the forecasting and demand analysis reports? (Y/N): ");
-            String answer = scanner.nextLine().trim();
-
-            if (answer.equalsIgnoreCase("Y")) {
-
-                return true;
-            }
-
-            if (answer.equalsIgnoreCase("N")) {
-
-                return false;
-            }
-
-            System.out.println("Please enter Y or N.");
-        }
+        System.out.println("4. " + riskIntelligenceOutputPath.getFileName());
+        System.out.println("5. " + alertOutputPath.getFileName());
     }
 
     private static void printDemandReport(
@@ -226,6 +295,86 @@ public class Main {
 
         ForecastReportGenerator reportGenerator = new ForecastReportGenerator();
         reportGenerator.printReport(forecastResults);
+    }
+
+    private static void printRiskIntelligenceReport(
+            List<RiskIntelligenceResult> riskResults,
+            List<ForecastResult> forecastResults,
+            List<SupplyChainRecord> records) {
+
+        RiskIntelligenceReportGenerator reportGenerator = new RiskIntelligenceReportGenerator();
+        reportGenerator.printReport(riskResults, forecastResults, records);
+    }
+
+    private static void printAlertReport(List<SupplyChainAlert> alerts) {
+
+        SupplyChainAlertReportGenerator reportGenerator = new SupplyChainAlertReportGenerator();
+        reportGenerator.printReport(alerts);
+    }
+
+    private static Path saveLocalDatabaseSnapshot(
+            List<SupplyChainRecord> records,
+            List<ForecastResult> forecastResults,
+            List<RiskIntelligenceResult> riskResults,
+            List<SupplyChainAlert> alerts) {
+
+        Path outputPath = Path.of("Data", "supply_chain_engine_store.db");
+        LocalDatabaseStorage storage = new LocalDatabaseStorage();
+
+        try {
+
+            storage.saveSnapshot(records, forecastResults, riskResults, alerts, outputPath);
+        } catch (IOException e) {
+
+            System.out.println("\nError saving local database snapshot: " + e.getMessage());
+        }
+
+        return outputPath;
+    }
+
+    private static void launchDashboardIfEnabled(
+            String[] args,
+            List<SupplyChainRecord> records,
+            List<DemandRecord> demandRecords,
+            List<ForecastResult> forecastResults,
+            List<RiskIntelligenceResult> riskResults,
+            List<SupplyChainAlert> alerts) {
+
+        if (isNoDashboardRequested(args)) {
+
+            System.out.println("\nDashboard skipped because --no-dashboard was provided.");
+            return;
+        }
+
+        if (GraphicsEnvironment.isHeadless()) {
+
+            System.out.println("\nDashboard skipped because no graphical display is available.");
+            return;
+        }
+
+        SwingUtilities.invokeLater(() -> {
+
+            SupplyChainDashboard dashboard = new SupplyChainDashboard(
+                    records,
+                    demandRecords,
+                    forecastResults,
+                    riskResults,
+                    alerts);
+            dashboard.setVisible(true);
+        });
+    }
+
+    private static boolean isNoDashboardRequested(String[] args) {
+
+        for (String arg : args) {
+
+            if ("--no-dashboard".equalsIgnoreCase(arg)) {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static class ForecastingOutput {
@@ -264,6 +413,50 @@ public class Main {
         private List<ForecastResult> getForecastResults() {
 
             return forecastResults;
+        }
+
+        private Path getOutputPath() {
+
+            return outputPath;
+        }
+    }
+
+    private static class RiskIntelligenceOutput {
+
+        private final List<RiskIntelligenceResult> riskResults;
+        private final Path outputPath;
+
+        private RiskIntelligenceOutput(List<RiskIntelligenceResult> riskResults, Path outputPath) {
+
+            this.riskResults = riskResults;
+            this.outputPath = outputPath;
+        }
+
+        private List<RiskIntelligenceResult> getRiskResults() {
+
+            return riskResults;
+        }
+
+        private Path getOutputPath() {
+
+            return outputPath;
+        }
+    }
+
+    private static class AlertOutput {
+
+        private final List<SupplyChainAlert> alerts;
+        private final Path outputPath;
+
+        private AlertOutput(List<SupplyChainAlert> alerts, Path outputPath) {
+
+            this.alerts = alerts;
+            this.outputPath = outputPath;
+        }
+
+        private List<SupplyChainAlert> getAlerts() {
+
+            return alerts;
         }
 
         private Path getOutputPath() {

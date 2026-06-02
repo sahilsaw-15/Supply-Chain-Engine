@@ -276,7 +276,7 @@ public class DemandReportGenerator {
 
     private void printSupplyChainRiskInsights(List<SupplyChainRecord> supplyChainRecords) {
 
-        System.out.println("\n8. Supply Chain Risk Insights");
+        System.out.println("\n8. Supply Chain Risk Alerts");
 
         if (supplyChainRecords.isEmpty()) {
 
@@ -287,12 +287,12 @@ public class DemandReportGenerator {
         Map<String, MetricSummary> productSummary = summarizeSupplyRecords(supplyChainRecords, GroupType.PRODUCT);
         List<MetricSummary> topDemandProducts = sortByDemand(productSummary, true);
 
-        System.out.println("\nHigh Demand + High Delay Risk");
-        System.out.println("Potential Supply Bottleneck");
+        System.out.println("\nHigh Demand + High Delay Alert");
+        System.out.println("Potential Supply Bottleneck Alert");
         printRiskTable(sortByDelayRisk(topDemandProducts), "Delay Risk");
 
-        System.out.println("\nHigh Demand + Low Profit");
-        System.out.println("Popular but Unprofitable Product");
+        System.out.println("\nPopular but Unprofitable Alert");
+        System.out.println("High Demand + Low Profit");
         printRiskTable(sortByProfitMarginLow(topDemandProducts), "Profit Margin");
     }
 

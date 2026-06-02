@@ -1,0 +1,23 @@
+﻿Alert Type,Product Name,Category Name,Forecast Demand,Delay Risk,Profit Margin,Severity,Recommendation
+HIGH DEMAND DELAY ALERT,Perfect Fitness Perfect Rip Deck,Cleats,72.56804820518919,54.95818886396084,11.16969715183395,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Summer dresses,Women's Clothing,64.60714285714286,56.46153846153846,13.617365813348618,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Lawn mower,Garden,62.71428571428571,55.78512396694215,12.974036970955114,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Nike Men's Dri-FIT Victory Golf Polo,Women's Apparel,62.62369625973717,54.55669122890421,11.132252035305745,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Porcelain crafts,Crafts,60.17857142857143,55.99173553719008,11.430690410676444,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Fighting video games,Video Games,58.82142857142857,54.295942720763726,8.158148321808435,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Adult dog supplies,Pet Supplies,57.42857142857143,58.94308943089431,8.6436536564849,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Web Camera,Cameras,57.22222222222223,58.108108108108105,11.318733220244972,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,DVDs,DVDs,56.42857142857143,53.6231884057971,8.382624376435354,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,O'Brien Men's Neoprene Life Vest,Indoor/Outdoor Games,56.36089076529702,54.74660586589284,11.022918015352074,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Industrial consumer electronics,Consumer Electronics,54.57142857142857,55.220417633410676,12.132529932071789,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Toys,Toys,54.42857142857143,55.00945179584121,14.75446631717471,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Children's heaters,Children's Clothing,53.214285714285715,53.374233128834355,11.672977071868845,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,CDs of rock,CDs,52.8,52.02952029520295,12.54579865266149,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Rock music,Music,52.714285714285715,57.142857142857146,12.761715226912818,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Smart watch,Sporting Goods,50.857142857142854,55.46218487394958,10.699049515389499,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Sports Books,Books,50.57142857142857,56.54320987654321,7.015030983895513,HIGH,Increase inventory and review supplier lead times.
+HIGH DEMAND DELAY ALERT,Baby sweater,Baby,50.25,52.65700483091788,12.47003117881821,HIGH,Increase inventory and review supplier lead times.
+POPULAR BUT UNPROFITABLE ALERT,Fighting video games,Video Games,58.82142857142857,54.295942720763726,8.158148321808435,MEDIUM,Review pricing strategy or supplier costs.
+POPULAR BUT UNPROFITABLE ALERT,Adult dog supplies,Pet Supplies,57.42857142857143,58.94308943089431,8.6436536564849,MEDIUM,Review pricing strategy or supplier costs.
+POPULAR BUT UNPROFITABLE ALERT,DVDs,DVDs,56.42857142857143,53.6231884057971,8.382624376435354,MEDIUM,Review pricing strategy or supplier costs.
+POPULAR BUT UNPROFITABLE ALERT,Sports Books,Books,50.57142857142857,56.54320987654321,7.015030983895513,MEDIUM,Review pricing strategy or supplier costs.

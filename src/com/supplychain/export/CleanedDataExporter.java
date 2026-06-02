@@ -2,6 +2,8 @@ package com.supplychain.export;
 
 import com.supplychain.model.DemandRecord;
 import com.supplychain.model.ForecastResult;
+import com.supplychain.model.RiskIntelligenceResult;
+import com.supplychain.model.SupplyChainAlert;
 import com.supplychain.model.SupplyChainRecord;
 
 import java.io.BufferedWriter;
@@ -141,9 +143,16 @@ public class CleanedDataExporter {
                     "MAE",
                     "RMSE",
                     "MAPE",
-                    "R2 Score",
+                    "Product R2 Score",
                     "Demand Trend",
-                    "Forecast Risk Level"
+                    "Forecast Risk Level",
+                    "Historical Average Demand",
+                    "Inventory Recommendation",
+                    "Delay Risk Rate",
+                    "Profit Margin",
+                    "Combined Risk Classification",
+                    "Reorder Priority",
+                    "Accuracy Note"
             ));
             writer.newLine();
 
@@ -164,7 +173,100 @@ public class CleanedDataExporter {
                         escape(record.getMape()),
                         escape(record.getR2Score()),
                         escape(record.getDemandTrend()),
-                        escape(record.getForecastRiskLevel())
+                        escape(record.getForecastRiskLevel()),
+                        escape(record.getHistoricalAverageDemand()),
+                        escape(record.getInventoryRecommendation()),
+                        escape(record.getDelayRiskRate()),
+                        escape(record.getProfitMargin()),
+                        escape(record.getCombinedRiskClassification()),
+                        escape(record.getReorderPriority()),
+                        escape(record.getAccuracyNote())
+                ));
+                writer.newLine();
+            }
+        }
+    }
+
+    public void exportRiskIntelligenceToCsv(List<RiskIntelligenceResult> records, Path outputPath) throws IOException {
+
+        Path parentDirectory = outputPath.getParent();
+
+        if (parentDirectory != null) {
+
+            Files.createDirectories(parentDirectory);
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
+
+            writer.write('\uFEFF');
+            writer.write(String.join(",",
+                    "Product Name",
+                    "Category Name",
+                    "Forecast Demand",
+                    "Delay Risk",
+                    "Profit Margin",
+                    "Volatility",
+                    "Risk Score",
+                    "Risk Level",
+                    "Recommendation",
+                    "Stockout Risk"
+            ));
+            writer.newLine();
+
+            for (RiskIntelligenceResult record : records) {
+
+                writer.write(String.join(",",
+                        escape(record.getProductName()),
+                        escape(record.getCategoryName()),
+                        escape(record.getForecastDemand()),
+                        escape(record.getDelayRisk()),
+                        escape(record.getProfitMargin()),
+                        escape(record.getVolatility()),
+                        escape(record.getRiskScore()),
+                        escape(record.getRiskLevel()),
+                        escape(record.getRecommendation()),
+                        escape(record.getStockoutRisk())
+                ));
+                writer.newLine();
+            }
+        }
+    }
+
+    public void exportAlertsToCsv(List<SupplyChainAlert> records, Path outputPath) throws IOException {
+
+        Path parentDirectory = outputPath.getParent();
+
+        if (parentDirectory != null) {
+
+            Files.createDirectories(parentDirectory);
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
+
+            writer.write('\uFEFF');
+            writer.write(String.join(",",
+                    "Alert Type",
+                    "Product Name",
+                    "Category Name",
+                    "Forecast Demand",
+                    "Delay Risk",
+                    "Profit Margin",
+                    "Severity",
+                    "Recommendation"
+            ));
+            writer.newLine();
+
+            for (SupplyChainAlert record : records) {
+
+                writer.write(String.join(",",
+                        escape(record.getAlertType()),
+                        escape(record.getProductName()),
+                        escape(record.getCategoryName()),
+                        escape(record.getForecastDemand()),
+                        escape(record.getDelayRisk()),
+                        escape(record.getProfitMargin()),
+                        escape(record.getSeverity()),
+                        escape(record.getRecommendation())
                 ));
                 writer.newLine();
             }

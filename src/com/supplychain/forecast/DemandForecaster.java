@@ -2,6 +2,7 @@ package com.supplychain.forecast;
 
 import com.supplychain.model.DemandRecord;
 import com.supplychain.model.ForecastResult;
+import com.supplychain.model.SupplyChainRecord;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +18,18 @@ public class DemandForecaster {
     private static final int MOVING_AVERAGE_WINDOW = 7;
     private static final double TRAINING_RATIO = 0.80;
     private static final int MINIMUM_RECORDS_TO_FORECAST = 5;
-    private static final int MINIMUM_ACTUAL_FOR_MAPE = 5;
+    private static final int MINIMUM_ACTUAL_FOR_MAPE = 10;
 
     public List<ForecastResult> forecast(List<DemandRecord> demandRecords) {
 
+        return forecast(demandRecords, Collections.emptyList());
+    }
+
+    public List<ForecastResult> forecast(List<DemandRecord> demandRecords, List<SupplyChainRecord> supplyChainRecords) {
+
         Map<String, List<DemandRecord>> recordsByProductCategory = groupByProductAndCategory(demandRecords);
+        Map<String, ProductDecisionSummary> decisionSummaryByProductCategory =
+                summarizeProductDecisionData(supplyChainRecords);
         List<ForecastResult> results = new ArrayList<>();
 
         for (List<DemandRecord> records : recordsByProductCategory.values()) {
@@ -33,7 +41,11 @@ public class DemandForecaster {
                 continue;
             }
 
-            results.addAll(forecastProductCategory(records));
+            String key = productCategoryKey(records.get(0).getProductName(), records.get(0).getCategoryName());
+            ProductDecisionSummary decisionSummary = decisionSummaryByProductCategory
+                    .getOrDefault(key, new ProductDecisionSummary());
+
+            results.addAll(forecastProductCategory(records, decisionSummary));
         }
 
         results.sort(Comparator
@@ -50,14 +62,36 @@ public class DemandForecaster {
 
         for (DemandRecord record : demandRecords) {
 
-            String key = record.getProductName() + "|" + record.getCategoryName();
+            String key = productCategoryKey(record.getProductName(), record.getCategoryName());
             recordsByProductCategory.computeIfAbsent(key, value -> new ArrayList<>()).add(record);
         }
 
         return recordsByProductCategory;
     }
 
-    private List<ForecastResult> forecastProductCategory(List<DemandRecord> records) {
+    private Map<String, ProductDecisionSummary> summarizeProductDecisionData(List<SupplyChainRecord> records) {
+
+        Map<String, ProductDecisionSummary> decisionSummaryByProductCategory = new LinkedHashMap<>();
+
+        for (SupplyChainRecord record : records) {
+
+            String key = productCategoryKey(record.getProductName(), record.getCategoryName());
+            ProductDecisionSummary summary =
+                    decisionSummaryByProductCategory.computeIfAbsent(key, value -> new ProductDecisionSummary());
+            summary.add(record);
+        }
+
+        return decisionSummaryByProductCategory;
+    }
+
+    private String productCategoryKey(String productName, String categoryName) {
+
+        return productName + "|" + categoryName;
+    }
+
+    private List<ForecastResult> forecastProductCategory(
+            List<DemandRecord> records,
+            ProductDecisionSummary decisionSummary) {
 
         int splitIndex = (int) Math.floor(records.size() * TRAINING_RATIO);
 
@@ -96,12 +130,29 @@ public class DemandForecaster {
         ModelMetrics weightedMovingAverageMetrics = evaluate(predictionRows, ModelType.WEIGHTED_MOVING_AVERAGE);
         ModelMetrics linearRegressionMetrics = evaluate(predictionRows, ModelType.LINEAR_REGRESSION);
         ModelMetrics bestMetrics = bestMetrics(movingAverageMetrics, weightedMovingAverageMetrics, linearRegressionMetrics);
-        String demandTrend = classifyDemandTrend(records);
-        String forecastRiskLevel = classifyForecastRisk(bestMetrics, demandTrend, records);
+        double historicalAverageDemand = averageDemand(records);
+        double delayRiskRate = decisionSummary.getDelayRiskRate();
+        double profitMargin = decisionSummary.getProfitMargin();
 
         List<ForecastResult> results = new ArrayList<>();
 
         for (PredictionRow predictionRow : predictionRows) {
+
+            double finalPredictedDemand = predictionRow.predictionFor(bestMetrics.getModelType());
+            String demandTrend = classifyForecastDemandTrend(finalPredictedDemand, historicalAverageDemand);
+            String forecastRiskLevel = classifyForecastRisk(bestMetrics, demandTrend, records);
+            String inventoryRecommendation = recommendInventory(finalPredictedDemand, historicalAverageDemand);
+            String combinedRiskClassification = classifyCombinedRisk(
+                    finalPredictedDemand,
+                    historicalAverageDemand,
+                    delayRiskRate,
+                    forecastRiskLevel);
+            String reorderPriority = classifyReorderPriority(
+                    finalPredictedDemand,
+                    historicalAverageDemand,
+                    delayRiskRate,
+                    profitMargin);
+            String accuracyNote = accuracyNote(predictionRow.getActualDemand(), bestMetrics);
 
             results.add(new ForecastResult(
                     predictionRow.getProductName(),
@@ -112,17 +163,173 @@ public class DemandForecaster {
                     predictionRow.getWeightedMovingAveragePrediction(),
                     predictionRow.getLinearRegressionPrediction(),
                     bestMetrics.getModelName(),
-                    predictionRow.predictionFor(bestMetrics.getModelType()),
+                    finalPredictedDemand,
                     bestMetrics.getMae(),
                     bestMetrics.getRmse(),
                     bestMetrics.getMape(),
                     bestMetrics.getR2Score(),
                     demandTrend,
-                    forecastRiskLevel
+                    forecastRiskLevel,
+                    historicalAverageDemand,
+                    inventoryRecommendation,
+                    delayRiskRate,
+                    profitMargin,
+                    combinedRiskClassification,
+                    reorderPriority,
+                    accuracyNote
             ));
         }
 
         return results;
+    }
+
+    private double averageDemand(List<DemandRecord> records) {
+
+        return records.stream()
+                .mapToInt(DemandRecord::getTotalQuantity)
+                .average()
+                .orElse(0.0);
+    }
+
+    private String recommendInventory(double forecast, double historicalAverage) {
+
+        if (historicalAverage == 0) {
+
+            return forecast > 0 ? "Increase Inventory" : "Maintain Inventory";
+        }
+
+        double differenceRatio = (forecast - historicalAverage) / historicalAverage;
+
+        if (differenceRatio > 0.05) {
+
+            return "Increase Inventory";
+        }
+
+        if (differenceRatio < -0.05) {
+
+            return "Reduce Inventory";
+        }
+
+        return "Maintain Inventory";
+    }
+
+    private String classifyForecastDemandTrend(double forecast, double historicalAverage) {
+
+        if (forecast > historicalAverage) {
+
+            return "Growing Demand";
+        }
+
+        return "Declining Demand";
+    }
+
+    private String classifyCombinedRisk(
+            double forecast,
+            double historicalAverage,
+            double delayRiskRate,
+            String forecastRiskLevel) {
+
+        boolean highForecast = historicalAverage == 0
+                ? forecast > 0
+                : forecast >= historicalAverage * 1.20;
+        boolean mediumForecast = historicalAverage > 0 && forecast >= historicalAverage;
+        boolean highDelayRisk = delayRiskRate >= 50.0;
+        boolean mediumDelayRisk = delayRiskRate >= 25.0;
+
+        if ((highForecast && highDelayRisk)
+                || ("HIGH".equals(forecastRiskLevel) && mediumDelayRisk)) {
+
+            return "HIGH RISK";
+        }
+
+        if ((highForecast && mediumDelayRisk)
+                || (mediumForecast && highDelayRisk)
+                || "MEDIUM".equals(forecastRiskLevel)) {
+
+            return "MEDIUM RISK";
+        }
+
+        return "LOW RISK";
+    }
+
+    private String classifyReorderPriority(
+            double forecast,
+            double historicalAverage,
+            double delayRiskRate,
+            double profitMargin) {
+
+        if (forecast < 10.0) {
+
+            return "LOW PRIORITY";
+        }
+
+        int score = 0;
+
+        if (isHighForecast(forecast, historicalAverage)) {
+
+            score += 2;
+        } else if (isMediumForecast(forecast, historicalAverage)) {
+
+            score += 1;
+        }
+
+        if (delayRiskRate >= 50.0) {
+
+            score += 2;
+        } else if (delayRiskRate >= 25.0) {
+
+            score += 1;
+        }
+
+        if (profitMargin >= 12.0) {
+
+            score += 2;
+        } else if (profitMargin >= 5.0) {
+
+            score += 1;
+        } else if (profitMargin < 0.0) {
+
+            score -= 1;
+        }
+
+        if (score >= 5) {
+
+            return "HIGH PRIORITY";
+        }
+
+        if (score >= 3) {
+
+            return "MEDIUM PRIORITY";
+        }
+
+        return "LOW PRIORITY";
+    }
+
+    private boolean isHighForecast(double forecast, double historicalAverage) {
+
+        return historicalAverage == 0
+                ? forecast > 0
+                : forecast >= historicalAverage * 1.20;
+    }
+
+    private boolean isMediumForecast(double forecast, double historicalAverage) {
+
+        return historicalAverage > 0 && forecast >= historicalAverage;
+    }
+
+    private String accuracyNote(int actualDemand, ModelMetrics bestMetrics) {
+
+        if (actualDemand < MINIMUM_ACTUAL_FOR_MAPE) {
+
+            return "Low-demand product: MAPE may be unstable";
+        }
+
+        if (!bestMetrics.isMapeReliable()) {
+
+            return "MAPE excluded from low-demand test rows";
+        }
+
+        return "";
     }
 
     private double movingAverage(List<Integer> history) {
@@ -232,7 +439,7 @@ public class DemandForecaster {
         double mape = percentageCount == 0 ? 0.0 : percentageErrorTotal / percentageCount;
         double r2Score = totalSquares == 0 ? 0.0 : 1.0 - (residualSquares / totalSquares);
 
-        return new ModelMetrics(modelType, mae, rmse, mape, r2Score);
+        return new ModelMetrics(modelType, mae, rmse, mape, r2Score, percentageCount);
     }
 
     private ModelMetrics bestMetrics(
@@ -250,7 +457,7 @@ public class DemandForecaster {
                 .min(Comparator
                         .comparingDouble(ModelMetrics::getMae)
                         .thenComparingDouble(ModelMetrics::getRmse)
-                        .thenComparingDouble(ModelMetrics::getMape))
+                        .thenComparingDouble(ModelMetrics::getReliableMapeForTieBreak))
                 .orElse(movingAverageMetrics);
     }
 
@@ -299,13 +506,13 @@ public class DemandForecaster {
 
         if ("Volatile Demand".equals(demandTrend)
                 || (average >= 20 && coefficientOfVariation > 0.75)
-                || bestMetrics.getMape() > 60.0) {
+                || (bestMetrics.isMapeReliable() && bestMetrics.getMape() > 60.0)) {
 
             return "HIGH";
         }
 
         if ("Declining Demand".equals(demandTrend)
-                || bestMetrics.getMape() > 30.0
+                || (bestMetrics.isMapeReliable() && bestMetrics.getMape() > 30.0)
                 || coefficientOfVariation > 0.50) {
 
             return "MEDIUM";
@@ -412,14 +619,22 @@ public class DemandForecaster {
         private final double rmse;
         private final double mape;
         private final double r2Score;
+        private final int mapeObservationCount;
 
-        private ModelMetrics(ModelType modelType, double mae, double rmse, double mape, double r2Score) {
+        private ModelMetrics(
+                ModelType modelType,
+                double mae,
+                double rmse,
+                double mape,
+                double r2Score,
+                int mapeObservationCount) {
 
             this.modelType = modelType;
             this.mae = mae;
             this.rmse = rmse;
             this.mape = mape;
             this.r2Score = r2Score;
+            this.mapeObservationCount = mapeObservationCount;
         }
 
         private ModelType getModelType() {
@@ -445,6 +660,16 @@ public class DemandForecaster {
         private double getMape() {
 
             return mape;
+        }
+
+        private double getReliableMapeForTieBreak() {
+
+            return isMapeReliable() ? mape : Double.MAX_VALUE;
+        }
+
+        private boolean isMapeReliable() {
+
+            return mapeObservationCount > 0;
         }
 
         private double getR2Score() {
@@ -520,6 +745,46 @@ public class DemandForecaster {
             }
 
             return movingAveragePrediction;
+        }
+    }
+
+    private static class ProductDecisionSummary {
+
+        private int totalOrders;
+        private int delayedOrders;
+        private double sales;
+        private double profit;
+
+        private void add(SupplyChainRecord record) {
+
+            totalOrders++;
+            sales += record.getSales();
+            profit += record.getProfit();
+
+            if (record.getLateDeliveryRisk() == 1) {
+
+                delayedOrders++;
+            }
+        }
+
+        private double getDelayRiskRate() {
+
+            if (totalOrders == 0) {
+
+                return 0.0;
+            }
+
+            return delayedOrders * 100.0 / totalOrders;
+        }
+
+        private double getProfitMargin() {
+
+            if (sales == 0) {
+
+                return 0.0;
+            }
+
+            return profit * 100.0 / sales;
         }
     }
 }

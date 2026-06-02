@@ -19,6 +19,13 @@ public class ForecastResult {
     private final double r2Score;
     private final String demandTrend;
     private final String forecastRiskLevel;
+    private final double historicalAverageDemand;
+    private final String inventoryRecommendation;
+    private final double delayRiskRate;
+    private final double profitMargin;
+    private final String combinedRiskClassification;
+    private final String reorderPriority;
+    private final String accuracyNote;
 
     public ForecastResult(
             String productName,
@@ -35,7 +42,14 @@ public class ForecastResult {
             double mape,
             double r2Score,
             String demandTrend,
-            String forecastRiskLevel) {
+            String forecastRiskLevel,
+            double historicalAverageDemand,
+            String inventoryRecommendation,
+            double delayRiskRate,
+            double profitMargin,
+            String combinedRiskClassification,
+            String reorderPriority,
+            String accuracyNote) {
 
         this.productName = productName;
         this.categoryName = categoryName;
@@ -52,6 +66,13 @@ public class ForecastResult {
         this.r2Score = r2Score;
         this.demandTrend = demandTrend;
         this.forecastRiskLevel = forecastRiskLevel;
+        this.historicalAverageDemand = historicalAverageDemand;
+        this.inventoryRecommendation = inventoryRecommendation;
+        this.delayRiskRate = delayRiskRate;
+        this.profitMargin = profitMargin;
+        this.combinedRiskClassification = combinedRiskClassification;
+        this.reorderPriority = reorderPriority;
+        this.accuracyNote = accuracyNote;
     }
 
     public String getProductName() {
@@ -112,5 +133,33 @@ public class ForecastResult {
 
     public String getForecastRiskLevel() {
         return forecastRiskLevel;
+    }
+
+    public double getHistoricalAverageDemand() {
+        return historicalAverageDemand;
+    }
+
+    public String getInventoryRecommendation() {
+        return inventoryRecommendation;
+    }
+
+    public double getDelayRiskRate() {
+        return delayRiskRate;
+    }
+
+    public double getProfitMargin() {
+        return profitMargin;
+    }
+
+    public String getCombinedRiskClassification() {
+        return combinedRiskClassification;
+    }
+
+    public String getReorderPriority() {
+        return reorderPriority;
+    }
+
+    public String getAccuracyNote() {
+        return accuracyNote;
     }
 }

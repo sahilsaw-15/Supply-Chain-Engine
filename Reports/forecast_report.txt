@@ -1,0 +1,20 @@
+DEMAND FORECAST REPORT
+======================
+
+MAE  : 4.20
+RMSE : 7.61
+MAPE : 24.79%
+R2   : 0.8804
+
+Top 10 Forecasted Products
+--------------------------
+Perfect Fitness Perfect Rip Deck              72.57
+Summer dresses                                64.61
+Lawn mower                                    62.71
+Nike Men's Dri-FIT Victory Golf Polo          62.62
+Porcelain crafts                              60.18
+Fighting video games                          58.82
+Adult dog supplies                            57.43
+Web Camera                                    57.22
+DVDs                                          56.43
+O'Brien Men's Neoprene Life Vest              56.36

@@ -1,0 +1,20 @@
+SUPPLY CHAIN RISK REPORT
+========================
+
+Risk Overview
+-------------
+MEDIUM RISK: 79
+HIGH RISK: 34
+
+Highest Risk Products
+---------------------
+Nike Men's Free TR 5.0 TB Training Shoe       Score 64.41 | HIGH RISK
+GoPro HERO3+ Black Edition Camera             Score 63.15 | HIGH RISK
+Pelican Maverick 100X Kayak                   Score 60.62 | HIGH RISK
+Diamondback Girls' Clarity 24 Hybrid Bike 201 Score 58.32 | HIGH RISK
+Garmin Forerunner 910XT GPS Watch             Score 57.87 | HIGH RISK
+Stiga Master Series ST3100 Competition Indoor Score 57.29 | HIGH RISK
+Under Armour Women's Ignite PIP VI Slide      Score 56.28 | HIGH RISK
+ENO Atlas Hammock Straps                      Score 56.23 | HIGH RISK
+Total Gym 1400                                Score 56.23 | HIGH RISK
+Hirzl Women's Hybrid Golf Glove               Score 56.13 | HIGH RISK

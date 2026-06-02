@@ -1,0 +1,31 @@
+SUPPLY CHAIN ALERT REPORT
+=========================
+
+Alert Distribution
+------------------
+High Demand Delay Alerts: 18
+Popular But Unprofitable: 4
+Total Alerts: 22
+
+Critical Alerts
+---------------
+Fighting video games                          POPULAR BUT UNPROFITABLE ALERT   Severity: MEDIUM Forecast: 58.82
+Adult dog supplies                            POPULAR BUT UNPROFITABLE ALERT   Severity: MEDIUM Forecast: 57.43
+DVDs                                          POPULAR BUT UNPROFITABLE ALERT   Severity: MEDIUM Forecast: 56.43
+Sports Books                                  POPULAR BUT UNPROFITABLE ALERT   Severity: MEDIUM Forecast: 50.57
+Perfect Fitness Perfect Rip Deck              HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 72.57
+Summer dresses                                HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 64.61
+Lawn mower                                    HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 62.71
+Nike Men's Dri-FIT Victory Golf Polo          HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 62.62
+Porcelain crafts                              HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 60.18
+Fighting video games                          HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 58.82
+Adult dog supplies                            HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 57.43
+Web Camera                                    HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 57.22
+DVDs                                          HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 56.43
+O'Brien Men's Neoprene Life Vest              HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 56.36
+Industrial consumer electronics               HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 54.57
+Toys                                          HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 54.43
+Children's heaters                            HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 53.21
+CDs of rock                                   HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 52.80
+Rock music                                    HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 52.71
+Smart watch                                   HIGH DEMAND DELAY ALERT          Severity: HIGH   Forecast: 50.86
